@@ -13,6 +13,7 @@ var player = null;
 var food = null;
 var score = 0;
 var wall = [];
+var gameover = false;
 
 window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
@@ -91,6 +92,11 @@ function paint(ctx){
 
 function act(){
     if(!pause){
+        //Check game over
+        if(gameover){
+            reset();
+        }
+
         //Change Direction
         if(lastPress === KEY_UP) {
             dir = 0;
@@ -139,11 +145,33 @@ function act(){
             food.x = random(canvas.width / 10 - 1 ) * 10
             food.y = random(canvas.height / 10 - 1 ) * 10
         }
+
+        //Wall Intersects
+        for(var i = 0, l = wall.length; i < l; i++){
+            if(food.intersects(wall[i])){
+                food.x = random(canvas.width / 10 - 1 ) * 10
+                food.y = random(canvas.height / 10 - 1 ) * 10
+            }
+            if(player.intersects(wall[i])){
+                gameover = true;
+                pause = true;
+            }
+        }
     }
     if(lastPress === KEY_ENTER){
         pause = !pause;
         lastPress = null;
     }
+}
+
+function reset(){
+    score = 0;
+    dir = 1;
+    player.x = 40;
+    player.y = 40;
+    food.x = random(canvas.width / 10 - 1 ) * 10;
+    food.y = random(canvas.height / 10 - 1 ) * 10;
+    gameover = false;
 }
 
 function repaint(){
