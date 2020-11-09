@@ -164,6 +164,7 @@ function act(){
                 food.y = random(canvas.height / 10 - 1 ) * 10
             }
             if(body[0].intersects(wall[i])){
+                aDie.play();
                 gameover = true;
                 pause = true;
             }
@@ -172,6 +173,7 @@ function act(){
         //Body Intersects
         for(i = 2, l = body.length; i < l; i += 1){
             if(body[0].intersects(body[i])){
+                aDie.play();
                 gameover = true;
                 pause = true;
             }
@@ -180,6 +182,7 @@ function act(){
         //Food Intersects
         if (body[0].intersects(food)) {
             score += 1;
+            aEat.play();
             body.push(new Rectangle(food.x, food.y, 10, 10));
             food.x = random(canvas.width / 10 - 1 ) * 10
             food.y = random(canvas.height / 10 - 1 ) * 10
@@ -220,6 +223,9 @@ function init(){
 
     iBody.src = './assets/body.png';
     iFood.src = './assets/fruit.png';
+
+    aEat.src = './assets/chomp.oga';
+    aDie.src = './assets/dies.oga';
 
     body.length = 0;
     body.push(new Rectangle(40, 40, 10, 10));
