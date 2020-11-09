@@ -12,6 +12,7 @@ var pause = true;
 var player = null;
 var food = null;
 var score = 0;
+var wall = [];
 
 window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
@@ -60,13 +61,20 @@ function paint(ctx){
     ctx.fillStyle = '#000';
     ctx.fillRect(0,0,canvas.width,canvas.height);
 
+    //Draw Player
     ctx.fillStyle = '#0f0';
     player.fill(ctx);
     // ctx.fillRect(x,y,10,10);
 
+    //Draw Food
     ctx.fillStyle = '#f00';
     food.fill(ctx);
 
+    //Draw Walls
+    ctx.fillStyle = '#999';
+    for(var i = 0, l = wall.length; i < l; i++){
+        wall[i].fill(ctx);
+    }
     //Debug Lastpress
     ctx.fillStyle = '#fff'
     ctx.fillText('Last Press: ' + lastPress, 0, 20);
@@ -153,6 +161,10 @@ function init(){
     ctx = canvas.getContext('2d');
     player = new Rectangle(40, 40, 10, 10);
     food = new Rectangle(80, 80, 10, 10);
+    wall.push(new Rectangle(100, 50, 10, 10))
+    wall.push(new Rectangle(100, 100, 10, 10))
+    wall.push(new Rectangle(200, 50, 10, 10))
+    wall.push(new Rectangle(200, 100, 10, 10))
     run();
     repaint();
 }
