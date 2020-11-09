@@ -10,6 +10,8 @@ var KEY_LEFT = 37,
 var dir = 0;
 var pause = true;
 var player = null;
+var food = null;
+var score = 0;
 
 window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
@@ -30,7 +32,7 @@ function Rectangle (x ,y , width, height){
     this.width = (width == null) ? 0 : width;
     this.height = (height == null) ? this.width : height;
 
-    this.intersect = function(rect){
+    this.intersects = function(rect){
         if(rect == null){
             window.console.warn('Missing parameters on function intersects');
         } else {
@@ -50,6 +52,10 @@ function Rectangle (x ,y , width, height){
     };
 }
 
+function random(max) {
+    return Math.floor(Math.random() * max);
+}
+
 function paint(ctx){
     ctx.fillStyle = '#000';
     ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -58,8 +64,15 @@ function paint(ctx){
     player.fill(ctx);
     // ctx.fillRect(x,y,10,10);
 
+    ctx.fillStyle = '#f00';
+    food.fill(ctx);
+
+    //Debug Lastpress
     ctx.fillStyle = '#fff'
     ctx.fillText('Last Press: ' + lastPress, 0, 20);
+
+    //Draw score
+    ctx.fillText('Score: ' + score, 0, 10);
 
     if(pause){
         ctx.textAlign = 'center';
@@ -111,6 +124,13 @@ function act(){
         if(player.y < 0){
             player.y = canvas.height;
         }
+
+        //Food Intersects
+        if (player.intersects(food)) {
+            score += 1;
+            food.x = random(canvas.width / 10 - 1 ) * 10
+            food.y = random(canvas.height / 10 - 1 ) * 10
+        }
     }
     if(lastPress === KEY_ENTER){
         pause = !pause;
@@ -132,6 +152,7 @@ function init(){
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
     player = new Rectangle(40, 40, 10, 10);
+    food = new Rectangle(80, 80, 10, 10);
     run();
     repaint();
 }
