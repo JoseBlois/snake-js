@@ -41,29 +41,41 @@
         this.y = (y === null) ? 0 : y;
         this.width = (width === null) ? 0 : width;
         this.height = (height === null) ? this.width : height;
+    }
 
-        this.intersects = function(rect){
-            if(rect == null){
-                window.console.warn('Missing parameters on function intersects');
-            } else {
-                return (this.x < rect.x + rect.width &&
-                        this.x + this.width > rect.x &&
-                        this.y < rect.y + rect.height &&
-                        this.y + this.height > rect.y);
-            }
-        };
+    Rectangle.prototype.intersects = function(rect){
+        if(rect === undefined){
+            window.console.warn('Missing parameters on function intersects');
+        } else {
+            return (this.x < rect.x + rect.width &&
+                    this.x + this.width > rect.x &&
+                    this.y < rect.y + rect.height &&
+                    this.y + this.height > rect.y);
+        }
+    };
 
-        this.fill = function(ctx){
-            if(ctx === null) {
-                window.console.warn('Missing parameters on function fill');
+    Rectangle.prototype.fill = function(ctx){
+        if(ctx === undefined) {
+            window.console.warn('Missing parameters on function fill');
+        } else {
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    };
+
+    Rectangle.prototype.drawImage = function(ctx, img){
+        if (img === undefined) {
+            window.console.warn('Missing parameters on function drawImage');
+        } else {
+            if (img.width) {
+                ctx.drawImage(img, this.x, this.y);
             } else {
-                ctx.fillRect(this.x, this.y, this.width, this.height);
+                ctx.strokeRect(this.x, this.y, this.width, this.height);
             }
-        };
+        }
     }
 
     function random(max) {
-        return Math.floor(Math.random() * max);
+        return ~~(Math.random() * max);
     }
 
     function paint(ctx){
@@ -74,13 +86,13 @@
         ctx.fillStyle = '#0f0';
         for(var i = 0, l = body.length; i < l; i++){
             // body[i].fill(ctx);
-            ctx.drawImage(iBody, body[i].x, body[i].y);
+            body[i].drawImage(ctx, iBody);
         };
 
         //Draw Food
         // ctx.fillStyle = '#f00';
         // food.fill(ctx);
-        ctx.drawImage(iFood, food.x, food.y);
+        food.drawImage(ctx, iFood);
 
         //Draw Walls
         ctx.fillStyle = '#999';
@@ -161,7 +173,7 @@
             }
 
             //Wall Intersects
-            for(i = 0, l = wall.length; i < l; i++){
+            for(var i = 0, l = wall.length; i < l; i++){
                 if(food.intersects(wall[i])){
                     food.x = random(canvas.width / 10 - 1 ) * 10
                     food.y = random(canvas.height / 10 - 1 ) * 10
@@ -220,6 +232,15 @@
         act();
     }
 
+    function canPlayOgg() {
+        var aud = new Audio();
+        if(aud.canPlayType('audio/ogg').replace(/no/,'')){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     function init(){
         canvas = document.getElementById('canvas');
         ctx = canvas.getContext('2d');
@@ -227,8 +248,12 @@
         iBody.src = './assets/body.png';
         iFood.src = './assets/fruit.png';
 
-        aEat.src = './assets/chomp.oga';
-        aDie.src = './assets/dies.oga';
+        if(canPlayOgg()){
+            aEat.src = './assets/chomp.oga';
+            aDie.src = './assets/dies.oga';
+        } else {
+            console.log('Browser cant play ogg audio format')
+        }
 
         body.length = 0;
         body.push(new Rectangle(40, 40, 10, 10));
