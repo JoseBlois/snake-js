@@ -85,7 +85,11 @@ function paint(ctx){
 
     if(pause){
         ctx.textAlign = 'center';
-        ctx.fillText('PAUSE', 150, 75);
+        if(gameover){
+            ctx.fillText('GAME OVER', 150, 75);
+        } else {
+            ctx.fillText('PAUSE', 150, 75);
+        }
         ctx.textAlign = 'left';
     }
 }
