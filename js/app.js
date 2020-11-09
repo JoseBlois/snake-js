@@ -15,6 +15,10 @@ var food = null;
 var score = 0;
 var wall = [];
 var gameover = false;
+var iBody = new Image();
+var iFood = new Image();
+var aEat = new Audio();
+var aDie = new Audio();
 
 window.requestAnimationFrame = (function () {
     return window.requestAnimationFrame ||
@@ -66,12 +70,14 @@ function paint(ctx){
     //Draw Player
     ctx.fillStyle = '#0f0';
     for(var i = 0, l = body.length; i < l; i++){
-        body[i].fill(ctx);
+        // body[i].fill(ctx);
+        ctx.drawImage(iBody, body[i].x, body[i].y);
     };
 
     //Draw Food
-    ctx.fillStyle = '#f00';
-    food.fill(ctx);
+    // ctx.fillStyle = '#f00';
+    // food.fill(ctx);
+    ctx.drawImage(iFood, food.x, food.y);
 
     //Draw Walls
     ctx.fillStyle = '#999';
@@ -211,6 +217,9 @@ function run(){
 function init(){
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
+
+    iBody.src = './assets/body.png';
+    iFood.src = './assets/fruit.png';
 
     body.length = 0;
     body.push(new Rectangle(40, 40, 10, 10));
