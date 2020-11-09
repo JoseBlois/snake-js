@@ -104,22 +104,22 @@ function act(){
         }
 
         //Move Body
-        for(var i = body.length - 1; i > 0; i--){
+        for(var i = body.length - 1; i > 0; i -= 1){
             body[i].x = body[i-1].x;
             body[i].y = body[i-1].y;
         }
 
         //Change Direction
-        if(lastPress === KEY_UP) {
+        if(lastPress === KEY_UP && dir !== 2) {
             dir = 0;
         }
-        if(lastPress === KEY_RIGHT) {
+        if(lastPress === KEY_RIGHT && dir !== 3) {
             dir = 1;
         }
-        if(lastPress === KEY_DOWN) {
+        if(lastPress === KEY_DOWN && dir !== 0) {
             dir = 2;
         }
-        if(lastPress === KEY_LEFT) {
+        if(lastPress === KEY_LEFT && dir !== 1) {
             dir = 3;
         }
 
@@ -138,10 +138,10 @@ function act(){
         }
 
         //Out Screen
-        if(body[0].x >= canvas.width){
+        if(body[0].x > canvas.width - body[0].width){
             body[0].x = 0;
         }
-        if(body[0].y >= canvas.height - body[0].height){
+        if(body[0].y > canvas.height - body[0].height){
             body[0].y = 0;
         }
         if(body[0].x < 0){
@@ -149,13 +149,6 @@ function act(){
         }
         if(body[0].y < 0){
             body[0].y = canvas.height - body[0].height;
-        }
-
-        //Food Intersects
-        if (body[0].intersects(food)) {
-            score += 1;
-            food.x = random(canvas.width / 10 - 1 ) * 10
-            food.y = random(canvas.height / 10 - 1 ) * 10
         }
 
         //Wall Intersects
@@ -169,6 +162,23 @@ function act(){
                 pause = true;
             }
         }
+
+        //Body Intersects
+        for(i = 2, l = body.length; i < l; i += 1){
+            if(body[0].intersects(body[i])){
+                gameover = true;
+                pause = true;
+            }
+        }
+
+        //Food Intersects
+        if (body[0].intersects(food)) {
+            score += 1;
+            body.push(new Rectangle(food.x, food.y, 10, 10));
+            food.x = random(canvas.width / 10 - 1 ) * 10
+            food.y = random(canvas.height / 10 - 1 ) * 10
+        }
+
     }
     if(lastPress === KEY_ENTER){
         pause = !pause;
