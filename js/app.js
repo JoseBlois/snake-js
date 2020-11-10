@@ -222,6 +222,15 @@
         gameover = false;
     }
 
+    function resize(){
+        var w = window.innerWidth / canvas.width;
+        var h = window.innerHeight / canvas.height;
+        var scale = Math.min(h, w);
+
+        canvas.style.width =(canvas.width * scale)+'px';
+        canvas.style.height =(canvas.height * scale)+'px';
+    }
+
     function repaint(){
         window.requestAnimationFrame(repaint);
         paint(ctx);
@@ -267,9 +276,10 @@
         wall.push(new Rectangle(200, 50, 10, 10))
         wall.push(new Rectangle(200, 100, 10, 10))
 
+        resize()
         run();
         repaint();
     }
-
+    window.addEventListener('resize', resize, false);
     window.addEventListener('load',init,false);
 }(window));
