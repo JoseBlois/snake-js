@@ -33,6 +33,8 @@
         scenes = [];
     var mainScene = null,
         gameScene = null;
+    var highscores = [],
+        posHighscore = 10;
 
 
     window.requestAnimationFrame = (function () {
@@ -146,6 +148,18 @@
         scenes[currentScene].load();
     };
 
+    function addHighscore(score){
+        posHighscore = 0;
+        while( highscores[posHighscore] > score && posHighscore < highscores.length){
+            posHighscore += 1;
+        }
+        highscores.splice(posHighscore,0,score);
+        if(highscores.length > 10){
+            highscores.length = 10;
+        }
+        localStorage.highscores = highscores.join(',');
+    }
+
     function init(){
         canvas = document.getElementById('canvas');
         ctx = canvas.getContext('2d');
@@ -177,6 +191,11 @@
         wall.push(new Rectangle(100, 100, 10, 10))
         wall.push(new Rectangle(200, 50, 10, 10))
         wall.push(new Rectangle(200, 100, 10, 10))
+
+        //Load saved highscores
+        if(localStorage.highscores){
+            highscores = localStorage.highscores.split(',');
+        }
 
         resize()
         run();
