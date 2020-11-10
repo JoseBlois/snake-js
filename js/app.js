@@ -34,7 +34,8 @@
     var mainScene = null,
         gameScene = null;
     var highscores = [],
-        posHighscore = 10;
+        posHighscore = 10,
+        highscoresScene = null;
 
 
     window.requestAnimationFrame = (function () {
@@ -224,6 +225,41 @@
         }
     }
 
+    //Highscore Scene
+    highscoresScene = new Scene();
+
+    highscoresScene.paint = function(ctx){
+        var i = 0, l = 0;
+
+        //Clear Canvas
+        ctx.fillStyle = '#080';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        //Draw Title
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText('HIGH SCORES', 150, 30);
+
+        //Draw High scores
+        ctx.textAlign = 'right';
+        for(i = 0, l = highscores.length; i < l ; i++){
+            if(i === posHighscore){
+                ctx.fillText('[NEW]:' + highscores[i], 180, 40 + (i * 10));
+            } else {
+                ctx.fillText(highscores[i], 180, 40 + (i * 10))
+            }
+        }
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'left';
+    };
+
+    highscoresScene.act = function(){
+        if(lastPress === KEY_ENTER){
+            loadScene(gameScene);
+            lastPress = null;
+        }
+    }
+
     //Game Scene
     gameScene = new Scene();
 
@@ -284,7 +320,7 @@
             //Check game over
             if(gameover){
                 // reset();
-                loadScene(mainScene);
+                loadScene(highscoresScene);
             }
 
             //Move Body
@@ -342,6 +378,7 @@
                     food.y = random(buffer.height / 10 - 1 ) * 10
                 }
                 if(body[0].intersects(wall[i])){
+                    addHighscore(score);
                     aDie.play();
                     gameover = true;
                     pause = true;
@@ -351,6 +388,7 @@
             //Body Intersects
             for(i = 2, l = body.length; i < l; i += 1){
                 if(body[0].intersects(body[i])){
+                    addHighscore(score);
                     aDie.play();
                     gameover = true;
                     pause = true;
