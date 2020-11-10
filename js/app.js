@@ -399,6 +399,10 @@
                     gameover = true;
                     pause = true;
                 }
+                if(specialFood !== null && specialFood.intersects(wall[i])){
+                    specialFood.x = random(buffer.width / 10 - 1 ) * 10;
+                    specialFood.y = random(buffer.height / 10 - 1 ) * 10;
+                }
             }
 
             //Body Intersects
