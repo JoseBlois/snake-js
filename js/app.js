@@ -36,6 +36,7 @@
     var highscores = [],
         posHighscore = 10,
         highscoresScene = null;
+    var specialFood = null;
 
 
     window.requestAnimationFrame = (function () {
@@ -161,6 +162,14 @@
         localStorage.highscores = highscores.join(',');
     }
 
+    function specialFoodSpawn(){
+        if(specialFood === null) {
+            setTimeout(function(){
+                specialFood = new Rectangle(random(buffer.width / 10 - 1 ) * 10,random(buffer.height / 10 - 1 ) * 10, 10, 10);
+            } , random(10) * 1000);
+        }
+    }
+
     function init(){
         canvas = document.getElementById('canvas');
         ctx = canvas.getContext('2d');
@@ -264,6 +273,8 @@
     gameScene = new Scene();
 
     gameScene.load = function(){
+        specialFood = null;
+        specialFoodSpawn();
         score = 0;
         dir = 1;
         body.length = 0;
@@ -291,6 +302,11 @@
         // ctx.fillStyle = '#f00';
         // food.fill(ctx);
         food.drawImage(ctx, iFood);
+        ctx.fillStyle= '#fff';
+        if(specialFood !== null){
+            specialFood.fill(ctx)
+        }
+        ctx.fillStyle = '#0f0';
 
         //Draw Walls
         ctx.fillStyle = '#999';
@@ -403,6 +419,15 @@
                 food.x = random(buffer.width / 10 - 1 ) * 10
                 food.y = random(buffer.height / 10 - 1 ) * 10
             }
+            if(specialFood !== null){
+                if (body[0].intersects(specialFood)){
+                    score += 1;
+                    aEat.play()
+                    specialFood = null;
+                    specialFoodSpawn();
+                }
+            }
+            console.log(specialFood);
 
         }
         if(lastPress === KEY_ENTER){
