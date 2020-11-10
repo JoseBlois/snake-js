@@ -27,6 +27,11 @@
     var bufferScale = 1,
         bufferOffSetX = 0,
         bufferOffSetY = 0;
+    var MAIN_SCENE = 0,
+        GAME_SCENE = 1,
+        currentScene = 1,
+        scenes = [];
+
 
     window.requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
@@ -79,139 +84,160 @@
         }
     }
 
+    function Scene() {
+        this.id = scenes.length;
+        scenes.push(this);
+    };
+    Scene.prototype = {
+        constructor : Scene,
+        load : function() {},
+        paint: function(ctx) {},
+        act : function(){}
+    };
+
     function random(max) {
         return ~~(Math.random() * max);
     }
 
     function paint(ctx){
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0,0,canvas.width,canvas.height);
+        if(currentScene === MAIN_SCENE){
+            ctx.fillStyle = '#0f0';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
 
-        //Draw Player
-        ctx.fillStyle = '#0f0';
-        for(var i = 0, l = body.length; i < l; i++){
-            // body[i].fill(ctx);
-            body[i].drawImage(ctx, iBody);
-        };
+        }else if (currentScene === GAME_SCENE){
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
 
-        //Draw Food
-        // ctx.fillStyle = '#f00';
-        // food.fill(ctx);
-        food.drawImage(ctx, iFood);
+            //Draw Player
+            ctx.fillStyle = '#0f0';
+            for(var i = 0, l = body.length; i < l; i++){
+                // body[i].fill(ctx);
+                body[i].drawImage(ctx, iBody);
+            };
 
-        //Draw Walls
-        ctx.fillStyle = '#999';
-        for(i = 0, l = wall.length; i < l; i++){
-            wall[i].fill(ctx);
-        }
-        //Debug Lastpress
-        ctx.fillStyle = '#fff'
-        ctx.fillText('Last Press: ' + lastPress, 0, 20);
+            //Draw Food
+            // ctx.fillStyle = '#f00';
+            // food.fill(ctx);
+            food.drawImage(ctx, iFood);
 
-        //Draw score
-        ctx.fillText('Score: ' + score, 0, 10);
-
-        if(pause){
-            ctx.textAlign = 'center';
-            if(gameover){
-                ctx.fillText('GAME OVER', 150, 75);
-            } else {
-                ctx.fillText('PAUSE', 150, 75);
+            //Draw Walls
+            ctx.fillStyle = '#999';
+            for(i = 0, l = wall.length; i < l; i++){
+                wall[i].fill(ctx);
             }
-            ctx.textAlign = 'left';
+            //Debug Lastpress
+            ctx.fillStyle = '#fff'
+            ctx.fillText('Last Press: ' + lastPress, 0, 20);
+
+            //Draw score
+            ctx.fillText('Score: ' + score, 0, 10);
+
+            if(pause){
+                ctx.textAlign = 'center';
+                if(gameover){
+                    ctx.fillText('GAME OVER', 150, 75);
+                } else {
+                    ctx.fillText('PAUSE', 150, 75);
+                }
+                ctx.textAlign = 'left';
+            }
         }
     }
 
     function act(){
-        if(!pause){
-            //Check game over
-            if(gameover){
-                reset();
-            }
+        if(currentScene === MAIN_SCENE){
 
-            //Move Body
-            for(var i = body.length - 1; i > 0; i -= 1){
-                body[i].x = body[i-1].x;
-                body[i].y = body[i-1].y;
-            }
+        } else if(currentScene === GAME_SCENE){
+            if(!pause){
+                //Check game over
+                if(gameover){
+                    reset();
+                }
 
-            //Change Direction
-            if(lastPress === KEY_UP && dir !== 2) {
-                dir = 0;
-            }
-            if(lastPress === KEY_RIGHT && dir !== 3) {
-                dir = 1;
-            }
-            if(lastPress === KEY_DOWN && dir !== 0) {
-                dir = 2;
-            }
-            if(lastPress === KEY_LEFT && dir !== 1) {
-                dir = 3;
-            }
+                //Move Body
+                for(var i = body.length - 1; i > 0; i -= 1){
+                    body[i].x = body[i-1].x;
+                    body[i].y = body[i-1].y;
+                }
 
-            //Move Rect
-            if(dir === 0){
-                body[0].y -= 10;
-            }
-            if(dir === 1){
-                body[0].x += 10;
-            }
-            if(dir === 2){
-                body[0].y += 10;
-            }
-            if(dir === 3){
-                body[0].x -= 10;
-            }
+                //Change Direction
+                if(lastPress === KEY_UP && dir !== 2) {
+                    dir = 0;
+                }
+                if(lastPress === KEY_RIGHT && dir !== 3) {
+                    dir = 1;
+                }
+                if(lastPress === KEY_DOWN && dir !== 0) {
+                    dir = 2;
+                }
+                if(lastPress === KEY_LEFT && dir !== 1) {
+                    dir = 3;
+                }
 
-            //Out Screen
-            if(body[0].x > buffer.width - body[0].width){
-                body[0].x = 0;
-            }
-            if(body[0].y > buffer.height - body[0].height){
-                body[0].y = 0;
-            }
-            if(body[0].x < 0){
-                body[0].x = buffer.width - body[0].width;
-            }
-            if(body[0].y < 0){
-                body[0].y = buffer.height - body[0].height;
-            }
+                //Move Rect
+                if(dir === 0){
+                    body[0].y -= 10;
+                }
+                if(dir === 1){
+                    body[0].x += 10;
+                }
+                if(dir === 2){
+                    body[0].y += 10;
+                }
+                if(dir === 3){
+                    body[0].x -= 10;
+                }
 
-            //Wall Intersects
-            for(var i = 0, l = wall.length; i < l; i++){
-                if(food.intersects(wall[i])){
+                //Out Screen
+                if(body[0].x > buffer.width - body[0].width){
+                    body[0].x = 0;
+                }
+                if(body[0].y > buffer.height - body[0].height){
+                    body[0].y = 0;
+                }
+                if(body[0].x < 0){
+                    body[0].x = buffer.width - body[0].width;
+                }
+                if(body[0].y < 0){
+                    body[0].y = buffer.height - body[0].height;
+                }
+
+                //Wall Intersects
+                for(var i = 0, l = wall.length; i < l; i++){
+                    if(food.intersects(wall[i])){
+                        food.x = random(buffer.width / 10 - 1 ) * 10
+                        food.y = random(buffer.height / 10 - 1 ) * 10
+                    }
+                    if(body[0].intersects(wall[i])){
+                        aDie.play();
+                        gameover = true;
+                        pause = true;
+                    }
+                }
+
+                //Body Intersects
+                for(i = 2, l = body.length; i < l; i += 1){
+                    if(body[0].intersects(body[i])){
+                        aDie.play();
+                        gameover = true;
+                        pause = true;
+                    }
+                }
+
+                //Food Intersects
+                if (body[0].intersects(food)) {
+                    score += 1;
+                    aEat.play();
+                    body.push(new Rectangle(food.x, food.y, 10, 10));
                     food.x = random(buffer.width / 10 - 1 ) * 10
                     food.y = random(buffer.height / 10 - 1 ) * 10
                 }
-                if(body[0].intersects(wall[i])){
-                    aDie.play();
-                    gameover = true;
-                    pause = true;
-                }
-            }
 
-            //Body Intersects
-            for(i = 2, l = body.length; i < l; i += 1){
-                if(body[0].intersects(body[i])){
-                    aDie.play();
-                    gameover = true;
-                    pause = true;
-                }
             }
-
-            //Food Intersects
-            if (body[0].intersects(food)) {
-                score += 1;
-                aEat.play();
-                body.push(new Rectangle(food.x, food.y, 10, 10));
-                food.x = random(buffer.width / 10 - 1 ) * 10
-                food.y = random(buffer.height / 10 - 1 ) * 10
+            if(lastPress === KEY_ENTER){
+                pause = !pause;
+                lastPress = null;
             }
-
-        }
-        if(lastPress === KEY_ENTER){
-            pause = !pause;
-            lastPress = null;
         }
     }
 
@@ -241,7 +267,9 @@
 
     function repaint(){
         window.requestAnimationFrame(repaint);
-        paint(bufferCtx);
+        if(scenes.length){
+            paint(bufferCtx);
+        }
 
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -251,7 +279,9 @@
 
     function run(){
         setTimeout(run, 50);
-        act();
+        if(scenes.length){
+            act();
+        }
     }
 
     function canPlayOgg() {
@@ -262,6 +292,11 @@
             return false;
         }
     }
+
+    function loadScene(scene){
+        currentScene = scene.id;
+        scenes[currentScene].load();
+    };
 
     function init(){
         canvas = document.getElementById('canvas');
