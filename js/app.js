@@ -29,8 +29,10 @@
         bufferOffSetY = 0;
     var MAIN_SCENE = 0,
         GAME_SCENE = 1,
-        currentScene = 1,
+        currentScene = 0,
         scenes = [];
+    var mainScene = null,
+        gameScene = null;
 
 
     window.requestAnimationFrame = (function () {
@@ -99,160 +101,6 @@
         return ~~(Math.random() * max);
     }
 
-    function paint(ctx){
-        if(currentScene === MAIN_SCENE){
-            ctx.fillStyle = '#0f0';
-            ctx.fillRect(0,0,canvas.width,canvas.height);
-
-        }else if (currentScene === GAME_SCENE){
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0,0,canvas.width,canvas.height);
-
-            //Draw Player
-            ctx.fillStyle = '#0f0';
-            for(var i = 0, l = body.length; i < l; i++){
-                // body[i].fill(ctx);
-                body[i].drawImage(ctx, iBody);
-            };
-
-            //Draw Food
-            // ctx.fillStyle = '#f00';
-            // food.fill(ctx);
-            food.drawImage(ctx, iFood);
-
-            //Draw Walls
-            ctx.fillStyle = '#999';
-            for(i = 0, l = wall.length; i < l; i++){
-                wall[i].fill(ctx);
-            }
-            //Debug Lastpress
-            ctx.fillStyle = '#fff'
-            ctx.fillText('Last Press: ' + lastPress, 0, 20);
-
-            //Draw score
-            ctx.fillText('Score: ' + score, 0, 10);
-
-            if(pause){
-                ctx.textAlign = 'center';
-                if(gameover){
-                    ctx.fillText('GAME OVER', 150, 75);
-                } else {
-                    ctx.fillText('PAUSE', 150, 75);
-                }
-                ctx.textAlign = 'left';
-            }
-        }
-    }
-
-    function act(){
-        if(currentScene === MAIN_SCENE){
-
-        } else if(currentScene === GAME_SCENE){
-            if(!pause){
-                //Check game over
-                if(gameover){
-                    reset();
-                }
-
-                //Move Body
-                for(var i = body.length - 1; i > 0; i -= 1){
-                    body[i].x = body[i-1].x;
-                    body[i].y = body[i-1].y;
-                }
-
-                //Change Direction
-                if(lastPress === KEY_UP && dir !== 2) {
-                    dir = 0;
-                }
-                if(lastPress === KEY_RIGHT && dir !== 3) {
-                    dir = 1;
-                }
-                if(lastPress === KEY_DOWN && dir !== 0) {
-                    dir = 2;
-                }
-                if(lastPress === KEY_LEFT && dir !== 1) {
-                    dir = 3;
-                }
-
-                //Move Rect
-                if(dir === 0){
-                    body[0].y -= 10;
-                }
-                if(dir === 1){
-                    body[0].x += 10;
-                }
-                if(dir === 2){
-                    body[0].y += 10;
-                }
-                if(dir === 3){
-                    body[0].x -= 10;
-                }
-
-                //Out Screen
-                if(body[0].x > buffer.width - body[0].width){
-                    body[0].x = 0;
-                }
-                if(body[0].y > buffer.height - body[0].height){
-                    body[0].y = 0;
-                }
-                if(body[0].x < 0){
-                    body[0].x = buffer.width - body[0].width;
-                }
-                if(body[0].y < 0){
-                    body[0].y = buffer.height - body[0].height;
-                }
-
-                //Wall Intersects
-                for(var i = 0, l = wall.length; i < l; i++){
-                    if(food.intersects(wall[i])){
-                        food.x = random(buffer.width / 10 - 1 ) * 10
-                        food.y = random(buffer.height / 10 - 1 ) * 10
-                    }
-                    if(body[0].intersects(wall[i])){
-                        aDie.play();
-                        gameover = true;
-                        pause = true;
-                    }
-                }
-
-                //Body Intersects
-                for(i = 2, l = body.length; i < l; i += 1){
-                    if(body[0].intersects(body[i])){
-                        aDie.play();
-                        gameover = true;
-                        pause = true;
-                    }
-                }
-
-                //Food Intersects
-                if (body[0].intersects(food)) {
-                    score += 1;
-                    aEat.play();
-                    body.push(new Rectangle(food.x, food.y, 10, 10));
-                    food.x = random(buffer.width / 10 - 1 ) * 10
-                    food.y = random(buffer.height / 10 - 1 ) * 10
-                }
-
-            }
-            if(lastPress === KEY_ENTER){
-                pause = !pause;
-                lastPress = null;
-            }
-        }
-    }
-
-    function reset(){
-        score = 0;
-        dir = 1;
-        body.length = 0;
-        body.push(new Rectangle(40, 40, 10, 10));
-        body.push(new Rectangle(0, 0, 10, 10));
-        body.push(new Rectangle(0, 0, 10, 10));
-        food.x = random(canvas.width / 10 - 1 ) * 10;
-        food.y = random(canvas.height / 10 - 1 ) * 10;
-        gameover = false;
-    }
-
     function resize(){
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -268,7 +116,7 @@
     function repaint(){
         window.requestAnimationFrame(repaint);
         if(scenes.length){
-            paint(bufferCtx);
+            scenes[currentScene].paint(bufferCtx);
         }
 
         ctx.fillStyle = '#000';
@@ -280,7 +128,7 @@
     function run(){
         setTimeout(run, 50);
         if(scenes.length){
-            act();
+            scenes[currentScene].act();
         }
     }
 
@@ -333,6 +181,177 @@
         resize()
         run();
         repaint();
+    }
+
+    //Main Scene
+    mainScene = new Scene();
+
+    mainScene.paint = function(ctx){
+        //Clear Canvas
+        ctx.fillStyle = '#080';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        //Draw Title
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#fff';
+        ctx.fillText('SNAKE',150,60);
+        ctx.fillText('Press Enter',150,90);
+    }
+
+    mainScene.act = function(){
+        if(lastPress === KEY_ENTER){
+            loadScene(gameScene);
+            lastPress = null;
+        }
+    }
+
+    //Game Scene
+    gameScene = new Scene();
+
+    gameScene.load = function(){
+        score = 0;
+        dir = 1;
+        body.length = 0;
+        body.push(new Rectangle(40, 40, 10, 10));
+        body.push(new Rectangle(0, 0, 10, 10));
+        body.push(new Rectangle(0, 0, 10, 10));
+        food.x = random(buffer.width / 10 - 1 ) * 10;
+        food.y = random(buffer.height / 10 - 1 ) * 10;
+        gameover = false;
+    }
+
+    gameScene.paint = function(ctx){
+        //Clear Canvas
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+
+        //Draw Player
+        ctx.fillStyle = '#0f0';
+        for(var i = 0, l = body.length; i < l; i++){
+            // body[i].fill(ctx);
+            body[i].drawImage(ctx, iBody);
+        };
+
+        //Draw Food
+        // ctx.fillStyle = '#f00';
+        // food.fill(ctx);
+        food.drawImage(ctx, iFood);
+
+        //Draw Walls
+        ctx.fillStyle = '#999';
+        for(i = 0, l = wall.length; i < l; i++){
+            wall[i].fill(ctx);
+        }
+        //Debug Lastpress
+        ctx.fillStyle = '#fff'
+        ctx.fillText('Last Press: ' + lastPress, 0, 20);
+
+        //Draw score
+        ctx.fillText('Score: ' + score, 0, 10);
+
+        if(pause){
+            ctx.textAlign = 'center';
+            if(gameover){
+                ctx.fillText('GAME OVER', 150, 75);
+            } else {
+                ctx.fillText('PAUSE', 150, 75);
+            }
+            ctx.textAlign = 'left';
+        }
+    }
+
+    gameScene.act = function(){
+        if(!pause){
+            //Check game over
+            if(gameover){
+                // reset();
+                loadScene(mainScene);
+            }
+
+            //Move Body
+            for(var i = body.length - 1; i > 0; i -= 1){
+                body[i].x = body[i-1].x;
+                body[i].y = body[i-1].y;
+            }
+
+            //Change Direction
+            if(lastPress === KEY_UP && dir !== 2) {
+                dir = 0;
+            }
+            if(lastPress === KEY_RIGHT && dir !== 3) {
+                dir = 1;
+            }
+            if(lastPress === KEY_DOWN && dir !== 0) {
+                dir = 2;
+            }
+            if(lastPress === KEY_LEFT && dir !== 1) {
+                dir = 3;
+            }
+
+            //Move Rect
+            if(dir === 0){
+                body[0].y -= 10;
+            }
+            if(dir === 1){
+                body[0].x += 10;
+            }
+            if(dir === 2){
+                body[0].y += 10;
+            }
+            if(dir === 3){
+                body[0].x -= 10;
+            }
+
+            //Out Screen
+            if(body[0].x > buffer.width - body[0].width){
+                body[0].x = 0;
+            }
+            if(body[0].y > buffer.height - body[0].height){
+                body[0].y = 0;
+            }
+            if(body[0].x < 0){
+                body[0].x = buffer.width - body[0].width;
+            }
+            if(body[0].y < 0){
+                body[0].y = buffer.height - body[0].height;
+            }
+
+            //Wall Intersects
+            for(var i = 0, l = wall.length; i < l; i++){
+                if(food.intersects(wall[i])){
+                    food.x = random(buffer.width / 10 - 1 ) * 10
+                    food.y = random(buffer.height / 10 - 1 ) * 10
+                }
+                if(body[0].intersects(wall[i])){
+                    aDie.play();
+                    gameover = true;
+                    pause = true;
+                }
+            }
+
+            //Body Intersects
+            for(i = 2, l = body.length; i < l; i += 1){
+                if(body[0].intersects(body[i])){
+                    aDie.play();
+                    gameover = true;
+                    pause = true;
+                }
+            }
+
+            //Food Intersects
+            if (body[0].intersects(food)) {
+                score += 1;
+                aEat.play();
+                body.push(new Rectangle(food.x, food.y, 10, 10));
+                food.x = random(buffer.width / 10 - 1 ) * 10
+                food.y = random(buffer.height / 10 - 1 ) * 10
+            }
+
+        }
+        if(lastPress === KEY_ENTER){
+            pause = !pause;
+            lastPress = null;
+        }
     }
     window.addEventListener('resize', resize, false);
     window.addEventListener('load',init,false);
