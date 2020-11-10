@@ -37,6 +37,7 @@
         posHighscore = 10,
         highscoresScene = null;
     var specialFood = null;
+    var url = 'www.jsonplaceholder.com'
 
 
     window.requestAnimationFrame = (function () {
@@ -168,6 +169,19 @@
                 specialFood = new Rectangle(random(buffer.width / 10 - 1 ) * 10,random(buffer.height / 10 - 1 ) * 10, 10, 10);
             } , random(10) * 1000);
         }
+    }
+
+    function sendScore(){
+        var promise = fetch(url + '?score='+score);
+        promise.then(function(res){
+                return res.json()
+                })
+                .then(function(values){
+                    console.log('Score sent successfully')
+                });
+        promise.catch(function(error) {
+            console.log('Error trying to send the score');
+        });
     }
 
     function init(){
@@ -426,12 +440,12 @@
             if(specialFood !== null){
                 if (body[0].intersects(specialFood)){
                     score += 1;
-                    aEat.play()
+                    sendScore();
+                    aEat.play();
                     specialFood = null;
                     specialFoodSpawn();
                 }
             }
-            console.log(specialFood);
 
         }
         if(lastPress === KEY_ENTER){
