@@ -22,6 +22,11 @@
     var iFood = new Image();
     var aEat = new Audio();
     var aDie = new Audio();
+    var buffer = null;
+    var bufferCtx = null;
+    var bufferScale = 1,
+        bufferOffSetX = 0,
+        bufferOffSetY = 0;
 
     window.requestAnimationFrame = (function () {
         return window.requestAnimationFrame ||
@@ -159,24 +164,24 @@
             }
 
             //Out Screen
-            if(body[0].x > canvas.width - body[0].width){
+            if(body[0].x > buffer.width - body[0].width){
                 body[0].x = 0;
             }
-            if(body[0].y > canvas.height - body[0].height){
+            if(body[0].y > buffer.height - body[0].height){
                 body[0].y = 0;
             }
             if(body[0].x < 0){
-                body[0].x = canvas.width - body[0].width;
+                body[0].x = buffer.width - body[0].width;
             }
             if(body[0].y < 0){
-                body[0].y = canvas.height - body[0].height;
+                body[0].y = buffer.height - body[0].height;
             }
 
             //Wall Intersects
             for(var i = 0, l = wall.length; i < l; i++){
                 if(food.intersects(wall[i])){
-                    food.x = random(canvas.width / 10 - 1 ) * 10
-                    food.y = random(canvas.height / 10 - 1 ) * 10
+                    food.x = random(buffer.width / 10 - 1 ) * 10
+                    food.y = random(buffer.height / 10 - 1 ) * 10
                 }
                 if(body[0].intersects(wall[i])){
                     aDie.play();
@@ -199,8 +204,8 @@
                 score += 1;
                 aEat.play();
                 body.push(new Rectangle(food.x, food.y, 10, 10));
-                food.x = random(canvas.width / 10 - 1 ) * 10
-                food.y = random(canvas.height / 10 - 1 ) * 10
+                food.x = random(buffer.width / 10 - 1 ) * 10
+                food.y = random(buffer.height / 10 - 1 ) * 10
             }
 
         }
@@ -223,17 +228,25 @@
     }
 
     function resize(){
-        var w = window.innerWidth / canvas.width;
-        var h = window.innerHeight / canvas.height;
-        var scale = Math.min(h, w);
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        canvas.style.width =(canvas.width * scale)+'px';
-        canvas.style.height =(canvas.height * scale)+'px';
+        var w = window.innerWidth / buffer.width;
+        var h = window.innerHeight / buffer.height;
+        bufferScale = Math.min(h, w);
+
+        bufferOffSetX =(canvas.width -(buffer.width * bufferScale))/2;
+        bufferOffSetY =(canvas.height -(buffer.height * bufferScale))/2;
     }
 
     function repaint(){
         window.requestAnimationFrame(repaint);
-        paint(ctx);
+        paint(bufferCtx);
+
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.imageSmoothingEnabled =false;
+        ctx.drawImage(buffer, bufferOffSetX, bufferOffSetY, buffer.width * bufferScale, buffer.height * bufferScale);
     }
 
     function run(){
@@ -253,6 +266,12 @@
     function init(){
         canvas = document.getElementById('canvas');
         ctx = canvas.getContext('2d');
+
+        //Load buffer
+        buffer = document.createElement('canvas');
+        bufferCtx = buffer.getContext('2d');
+        buffer.width = 300;
+        buffer.height = 150;
 
         iBody.src = './assets/body.png';
         iFood.src = './assets/fruit.png';
